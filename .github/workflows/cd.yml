@@ -25,23 +25,3 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
-
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            # Pull the latest Docker image
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
-
-            # Stop and remove the old container (if exists)
-            docker stop fastapi-app || true
-            docker rm fastapi-app || true
-
-            # Run the new container
-            docker run -d --name fastapi-app -p 8000:8000 ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
-
-            # Restart Nginx to apply changes
-            sudo systemctl restart nginx
