@@ -43,6 +43,7 @@ fastapi-book-project/
 - Pydantic
 - pytest
 - uvicorn
+- Docker (for containerization)
 
 ## Installation
 
@@ -71,13 +72,26 @@ pip install -r requirements.txt
 1. Start the server:
 
 ```bash
-uvicorn main:app
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 2. Access the API documentation:
 
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+Pull and Run from Docker Hub
+
+If the image is hosted on Docker Hub:
+
+docker pull mrdanny11/fastapi-app:latest
+docker run -d --name gracious_northcutt -p 8000:8000 mrdanny11/fastapi-app:latest
+
+# Deployment Instructions
+
+1. Using Docker
+   docker build -t fastapi-app .
+   docker run -d --name fastapi-app -p 8000:8000 fastapi-app
 
 ## API Endpoints
 
