@@ -25,3 +25,12 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
+
+      - name: Deploy to Server
+        run: |
+          sshpass -p "${{ secrets.SSH_PRIVATE_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            docker stop fastapi-app || true
+            docker rm fastapi-app || true
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
+            docker run -d --name fastapi-app -p 80:8000 ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
+          EOF
