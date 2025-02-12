@@ -14,5 +14,19 @@ jobs:
 
       - name: Deploy to AWS Server
         run: |
-          sshpass -p "${{ secrets.SSH_PRIVATE_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            # Navigate to your application directory
+            cd /home/${{ secrets.SERVER_USER }}/your-app-directory
+            
+            # Pull latest code (if using Git)
+            git pull origin main
+            
+            # Stop existing FastAPI service (modify if needed)
+            sudo systemctl stop fastapi || true
+            
+            # Start FastAPI again
+            sudo systemctl start fastapi
+            
+            # Check if the service is running
+            sudo systemctl status fastapi --no-pager
           EOF
