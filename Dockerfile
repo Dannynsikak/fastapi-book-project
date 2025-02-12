@@ -2,7 +2,7 @@
 FROM python:3.11
 
 # Set the working directory in the container
-WORKDIR /fastapi-app
+WORKDIR /app
 
 # Copy requirements.txt and install dependencies
 COPY requirements.txt .
