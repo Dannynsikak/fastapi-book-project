@@ -2,7 +2,7 @@ name: CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main # Deploy only when code is merged into main
 
 jobs:
   deploy:
@@ -12,24 +12,25 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Deploy to AWS Server
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and Push Docker Image
         run: |
-          sshpass -p "${{ secrets.SSH_PRIVATE_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            # Ensure the application directory exists
-            cd fastapi-book-project || exit 1
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
 
-            # Pull latest code from GitHub
-            git pull origin main
-
-            # Install dependencies (if needed)
-            pip install -r requirements.txt 
-
-            # Kill any existing FastAPI process (replace 'your_app.main' with actual entry point)
-            pkill -f "uvicorn main:app" || true
-
-            # Restart FastAPI server in the background on port 8000
-            nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 > fastapi.log 2>&1 &
-
-            # Display running processes
-            ps aux | grep uvicorn
+      - name: Deploy to Server
+        run: |
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            docker stop fastapi-app || true
+            docker rm fastapi-app || true
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
+            docker run -d --name fastapi-app -p 80:8000 ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-app:latest
           EOF
