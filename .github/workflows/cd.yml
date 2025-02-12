@@ -14,19 +14,22 @@ jobs:
 
       - name: Deploy to AWS Server
         run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            # Navigate to your application directory
-            cd /home/${{ secrets.SERVER_USER }}/your-app-directory
-            
-            # Pull latest code (if using Git)
+          sshpass -p "${{ secrets.SSH_PRIVATE_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            # Ensure the application directory exists
+            cd fastapi-book-project || exit 1
+
+            # Pull latest code from GitHub
             git pull origin main
-            
-            # Stop existing FastAPI service (modify if needed)
-            sudo systemctl stop fastapi || true
-            
-            # Start FastAPI again
-            sudo systemctl start fastapi
-            
-            # Check if the service is running
-            sudo systemctl status fastapi --no-pager
+
+            # Install dependencies (if needed)
+            pip install -r requirements.txt 
+
+            # Kill any existing FastAPI process (replace 'your_app.main' with actual entry point)
+            pkill -f "uvicorn main:app" || true
+
+            # Restart FastAPI server in the background on port 8000
+            nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 > fastapi.log 2>&1 &
+
+            # Display running processes
+            ps aux | grep uvicorn
           EOF
