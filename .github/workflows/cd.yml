@@ -14,19 +14,19 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Use sudo without requiring interactive password input
-            echo ${{ secrets.SERVER_PASSWORD }} | sudo -S apt-get update -y
-            echo ${{ secrets.SERVER_PASSWORD }} | sudo -S apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+            echo ${{ secrets.SSH_PRIVATE_KEY }} | sudo -S apt-get update -y
+            echo ${{ secrets.SSH_PRIVATE_KEY }} | sudo -S apt-get install -y apt-transport-https ca-certificates curl software-properties-common
             # Add Docker's official GPG key
             curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo -S apt-key add -
             sudo -S add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
             # Install Docker
-            echo ${{ secrets.SERVER_PASSWORD }} | sudo -S apt-get update -y
-            echo ${{ secrets.SERVER_PASSWORD }} | sudo -S apt-get install -y docker-ce docker-ce-cli containerd.io
+            echo ${{ secrets.SSH_PRIVATE_KEY }} | sudo -S apt-get update -y
+            echo ${{ secrets.SSH_PRIVATE_KEY }} | sudo -S apt-get install -y docker-ce docker-ce-cli containerd.io
             # Add the SSH user to the Docker group
-            echo ${{ secrets.SERVER_PASSWORD }} | sudo -S usermod -aG docker ${{ secrets.SERVER_USER }}
+            echo ${{ secrets.SSH_PRIVATE_KEY }} | sudo -S usermod -aG docker ${{ secrets.SERVER_USER }}
             # Install Docker Compose
             sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
@@ -34,7 +34,7 @@ jobs:
             docker --version
             docker-compose --version
             # Navigate to the project directory
-            echo ${{ secrets.SERVER_PASSWORD }} | sudo -S cd /home/ubuntu/
+            echo ${{ secrets.SSH_PRIVATE_KEY }} | sudo -S cd /home/ubuntu/
             git clone https://github.com/Dannynsikak/fastapi-book-project || true  # Avoid failing if already cloned
             cd fastapi-book-project/
             git pull
